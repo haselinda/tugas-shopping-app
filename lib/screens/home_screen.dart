@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'product_list_screen.dart';
+import 'product_detail_screen.dart'; // IMPORT PRODUCT DETAIL
+import '../models/product.dart'; // IMPORT PRODUCT MODEL
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -31,36 +33,51 @@ class HomeScreen extends StatelessWidget {
     },
   ];
 
-  final List<Map<String, dynamic>> popularProducts = const [
-    {
-      'name': 'Spark Bouquet',
-      'shortName': 'Spark',
-      'price': '\$90',
-      'image': 'assets/products/spark_bouquet.png',
-      'color': Color(0xFFFF6EC7),
-    },
-    {
-      'name': 'Blue Wedding',
-      'shortName': 'Blue Wed',
-      'price': '\$120',
-      'image': 'assets/products/wedding_biru.png',
-      'color': Color(0xFFFFD700),
-    },
-    {
-      'name': 'Magic Bouquet',
-      'shortName': 'Magic',
-      'price': '\$75',
-      'image': 'assets/products/magic_bouquet.png',
-      'color': Color(0xFFFFD1DC),
-    },
-    {
-      'name': 'Home Decor',
-      'shortName': 'Decor',
-      'price': '\$85',
-      'image': 'assets/products/home_decor1.png',
-      'color': Color(0xFFFF6EC7),
-    },
-  ];
+  // FUNGSI FORMAT RUPIAH
+  String _formatRupiah(double price) {
+    return 'Rp ${price.toStringAsFixed(0).replaceAllMapped(
+      RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
+      (Match m) => '${m[1]}.',
+    )}';
+  }
+
+  // DATA PRODUK POPULAR YANG KONSISTEN
+  List<Product> get popularProducts {
+    return [
+      Product(
+        id: '1', 
+        name: 'Spark Bouquet', 
+        price: 250000, 
+        category: 'Bouquet', 
+        image: 'assets/products/spark_bouquet.png', 
+        rating: 4.9
+      ),
+      Product(
+        id: '7', 
+        name: 'Blue Wedding', 
+        price: 450000, 
+        category: 'Wedding', 
+        image: 'assets/products/wedding_biru.png', 
+        rating: 5.0
+      ),
+      Product(
+        id: '2', 
+        name: 'Magic Bouquet', 
+        price: 180000, 
+        category: 'Bouquet', 
+        image: 'assets/products/magic_bouquet.png', 
+        rating: 4.7
+      ),
+      Product(
+        id: '13', 
+        name: 'Modern Home Decor', 
+        price: 350000, 
+        category: 'Decor', 
+        image: 'assets/products/home_decor1.png', 
+        rating: 4.6
+      ),
+    ];
+  }
 
   // RESPONSIVE METHODS
   double _getProductCardWidth(BuildContext context) {
@@ -297,78 +314,109 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildProductCard(BuildContext context, Map<String, dynamic> product) {
+  Widget _buildProductCard(BuildContext context, Product product) {
     final isSmall = MediaQuery.of(context).size.width < 380;
     final useShortName = MediaQuery.of(context).size.width < 400;
     
-    return Container(
-      width: _getProductCardWidth(context),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(isSmall ? 10 : 12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
-            blurRadius: 6,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // PRODUCT IMAGE
-          Container(
-            height: _getProductImageHeight(context),
-            width: double.infinity,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(isSmall ? 10 : 12),
-                topRight: Radius.circular(isSmall ? 10 : 12),
-              ),
-              image: DecorationImage(
-                image: AssetImage(product['image'] as String),
-                fit: BoxFit.cover,
-              ),
-            ),
-          ),
+    // Tentukan warna berdasarkan kategori
+    Color getProductColor(String category) {
+      switch (category) {
+        case 'Wedding':
+          return Color(0xFFFF6EC7);
+        case 'Decor':
+          return Color(0xFFFFD700);
+        case 'Bouquet':
+          return Color(0xFFFFD1DC);
+        default:
+          return Color(0xFFFF6EC7);
+      }
+    }
 
-          // PRODUCT INFO
-          Padding(
-            padding: EdgeInsets.all(isSmall ? 6 : 8),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // PRODUCT NAME - RESPONSIVE
-                SizedBox(
-                  height: isSmall ? 14 : 16,
-                  child: Text(
-                    useShortName ? 
-                      (product['shortName'] as String) : 
-                      (product['name'] as String),
-                    style: TextStyle(
-                      fontSize: _getProductFontSize(context, true),
-                      fontWeight: FontWeight.w600,
-                      color: Colors.black87,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-                SizedBox(height: isSmall ? 2 : 4),
-                // PRICE
-                Text(
-                  product['price'] as String,
-                  style: TextStyle(
-                    fontSize: _getProductFontSize(context, false),
-                    fontWeight: FontWeight.bold,
-                    color: product['color'] as Color,
-                  ),
-                ),
-              ],
-            ),
+    // Nama pendek untuk layar kecil
+    String getShortName(String name) {
+      if (name.length > 10) {
+        return name.split(' ').first;
+      }
+      return name;
+    }
+    
+    return GestureDetector(
+      onTap: () {
+        // NAVIGATION KE PRODUCT DETAIL
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ProductDetailScreen(product: product),
           ),
-        ],
+        );
+      },
+      child: Container(
+        width: _getProductCardWidth(context),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(isSmall ? 10 : 12),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withOpacity(0.1),
+              blurRadius: 6,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // PRODUCT IMAGE
+            Container(
+              height: _getProductImageHeight(context),
+              width: double.infinity,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(isSmall ? 10 : 12),
+                  topRight: Radius.circular(isSmall ? 10 : 12),
+                ),
+                image: DecorationImage(
+                  image: AssetImage(product.image),
+                  fit: BoxFit.cover,
+                ),
+              ),
+            ),
+
+            // PRODUCT INFO
+            Padding(
+              padding: EdgeInsets.all(isSmall ? 6 : 8),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  
+                  SizedBox(
+                    height: isSmall ? 14 : 16,
+                    child: Text(
+                      useShortName ? getShortName(product.name) : product.name,
+                      style: TextStyle(
+                        fontSize: _getProductFontSize(context, true),
+                        fontWeight: FontWeight.w600,
+                        color: Colors.black87,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  SizedBox(height: isSmall ? 2 : 4),
+                  // PRICE - SUDAH DIUBAH KE RUPIAH
+                  Text(
+                    _formatRupiah(product.price),
+                    style: TextStyle(
+                      fontSize: _getProductFontSize(context, false),
+                      fontWeight: FontWeight.bold,
+                      color: getProductColor(product.category),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

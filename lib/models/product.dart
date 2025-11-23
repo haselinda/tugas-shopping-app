@@ -7,7 +7,7 @@ class Product {
   final bool inStock;
   final double rating;
   final Map<String, int> variants;
-  final double? originalPrice; // ✅ TAMBAH BARIS INI
+  final double? originalPrice; 
 
   Product({
     required this.id,
@@ -18,6 +18,6 @@ class Product {
     this.inStock = true,
     this.rating = 0.0,
     this.variants = const {},
-    this.originalPrice, // ✅ TAMBAH PARAMETER INI
+    this.originalPrice, 
   });
 }
